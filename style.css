@@ -3,44 +3,47 @@ body {
   background: #000;
   color: white;
   font-family: sans-serif;
-  overflow: hidden; /* 画面全体が揺れないように固定 */
+  overflow: hidden;
 }
 
-/* 上部ツールバー */
+/* 上部ツールバー：縮小禁止と横スクロール許可 */
 #zoom-bar {
   position: fixed;
   top: 0;
   width: 100%;
-  height: 45px;
-  background: #333; /* 少し濃くして高級感を */
+  height: 50px;
+  background: #333;
   display: flex;
   align-items: center;
   padding: 0 10px;
-  gap: 10px;
+  gap: 15px;
   z-index: 10;
   box-sizing: border-box;
+  overflow-x: auto; /* はみ出したら横にスライドできる */
+  white-space: nowrap;
 }
 
-/* ページ送り・共通ボタン */
+/* バーの中の要素が勝手に小さくなるのを防ぐ */
+#zoom-bar > * {
+  flex-shrink: 0;
+}
+
 .zoom-btn {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   background: #ddd;
   color: #000;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 /* PDF表示領域 */
 #pdf-container {
   position: absolute;
-  top: 45px;
-  bottom: 70px;
+  top: 50px;
+  bottom: 80px;
   width: 100%;
   overflow: auto;
   background: #111;
@@ -48,17 +51,13 @@ body {
   justify-content: center;
 }
 
-#pdf-canvas {
-  display: block;
-}
-
 /* 下部音楽バー */
 #bottom-bar {
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 70px;
-  background: #222; /* プレイヤーを目立たせるために少し暗く */
+  height: 80px;
+  background: #222;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -67,81 +66,47 @@ body {
   border-top: 1px solid #444;
 }
 
-/* 時計 */
 #clock {
   font-size: 28px;
   font-weight: bold;
-  font-family: monospace; /* 数字の幅を揃える */
   min-width: 80px;
+  flex-shrink: 0;
 }
 
-/* 音楽プレイヤー全体 */
 #player {
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
   justify-content: flex-end;
-  max-width: 70%;
+  overflow: hidden; /* はみ出し防止 */
 }
 
-/* 丸ボタン（再生・プレイリスト） */
 .round-btn {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
+  flex-shrink: 0;
   border: none;
   background: #ddd;
-  color: #000;
-  font-size: 20px;
-  cursor: pointer;
-  flex-shrink: 0;
 }
 
-/* 曲名・シークバーのコンテナ */
 #track-info {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  overflow: hidden;
+  min-width: 0; /* 文字省略のために必要 */
 }
 
-/* 曲名スクロール（アニメーションはJSで名前が入った時に目立つようになります） */
 #track-title {
-  font-size: 12px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* スクロールしてない時は省略記号を入れる */
-  color: #aaa;
+  text-overflow: ellipsis;
 }
 
-/* シークバー（横幅いっぱい） */
 #seek-bar {
   width: 100%;
-  margin-top: 5px;
-  cursor: pointer;
 }
 
-#track-time {
-  font-size: 10px;
-  color: #888;
-  margin-top: 2px;
-}
-
-/* プレイリスト */
-#playlist-popup {
-  position: fixed;
-  bottom: 70px;
-  right: 10px;
-  width: 250px;
-  background: #333;
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 10px;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-}
-
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
