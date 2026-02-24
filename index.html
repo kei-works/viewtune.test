@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDF Viewer + Music</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,13 +23,18 @@
 
   <div id="bottom-bar">
     <div id="clock">00:00</div>
+
     <div id="player">
+      <input type="file" id="audio-file" accept="audio/*" style="display: none;">
+      
       <button id="play-btn" class="round-btn">▶</button>
+
       <div id="track-info">
-        <div id="track-title">曲名がここに流れるよ</div>
+        <div id="track-title" style="cursor: pointer; text-decoration: underline;">曲を選択（ここをタップ）</div>
         <div id="track-time">0:00 / 0:00</div>
         <input type="range" id="seek-bar" min="0" max="100" value="0">
       </div>
+
       <button id="playlist-btn" class="round-btn">≡</button>
     </div>
   </div>
