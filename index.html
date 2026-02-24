@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Viewer + Music</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="zoom-bar">
+    <button id="prev-page" class="zoom-btn">←</button>
+
+    <input type="file" id="pdf-file" accept="application/pdf">
+
+    <span id="page-num">0 / 0</span>
+
+    <span id="zoom-label">拡大率: 100%</span>
+    <input type="range" id="zoom-slider" min="50" max="200" value="100">
+
+    <button id="next-page" class="zoom-btn">→</button>
+  </div>
+
+  <div id="pdf-container">
+    <canvas id="pdf-canvas"></canvas>
+  </div>
+
+  <div id="bottom-bar">
+    <div id="clock">00:00</div>
+
+    <div id="player">
+      <button id="play-btn" class="round-btn">▶</button>
+
+      <div id="track-info">
+        <div id="track-title">曲名がここに流れるよ</div>
+        <div id="track-time">0:00 / 0:00</div>
+        <input type="range" id="seek-bar" min="0" max="100" value="0">
+      </div>
+
+      <button id="playlist-btn" class="round-btn">≡</button>
+    </div>
+  </div>
+
+  <div id="playlist-popup" class="hidden">
+    <ul id="playlist"></ul>
+  </div>
+
+  <!-- PDF.js 5.x（ES Module） -->
+  <script type="module">
+    import * as pdfjsLib from './pdf.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.mjs';
+
+    import './script.js';
+    window.pdfjsLib = pdfjsLib; // script.js から使えるようにする
+  </script>
+
+</body>
+</html>
