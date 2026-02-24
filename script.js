@@ -1,59 +1,73 @@
-let pdfDoc = null;
-let currentPage = 1;
-let scale = 1.0;
+window.addEventListener('load', () => {
+    const pdfjsLib = window.pdfjsLib;
 
-const canvas = document.getElementById("pdf-canvas");
-const ctx = canvas.getContext("2d");
+    let pdfDoc = null;
+    let currentPage = 1;
+    let scale = 1.0;
 
-const fileInput = document.getElementById("pdf-file");
-const pageNumLabel = document.getElementById("page-num");
-const zoomSlider = document.getElementById("zoom-slider");
-const zoomLabel = document.getElementById("zoom-label");
+    const canvas = document.getElementById("pdf-canvas");
+    const ctx = canvas.getContext("2d");
 
-fileInput.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const fileInput = document.getElementById("pdf-file");
+    const pageNumLabel = document.getElementById("page-num");
+    const zoomSlider = document.getElementById("zoom-slider");
+    const zoomLabel = document.getElementById("zoom-label");
 
-  const arrayBuffer = await file.arrayBuffer();
+    fileInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-  const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
-  pdfDoc = await loadingTask.promise;
+        const arrayBuffer = await file.arrayBuffer();
 
-  currentPage = 1;
-  renderPage();
-});
+        // PDF.jsでファイルを読み込む
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        pdfDoc = await loadingTask.promise;
 
-async function renderPage() {
-  const page = await pdfDoc.getPage(currentPage);
+        currentPage = 1;
+        renderPage();
+    });
 
-  const viewport = page.getViewport({ scale: scale });
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
+    async function renderPage() {
+        if (!pdfDoc) return;
+        const page = await pdfDoc.getPage(currentPage);
 
-  const renderContext = {
-    canvasContext: ctx,
-    viewport: viewport
-  };
+        const viewport = page.getViewport({ scale: scale });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
 
-  await page.render(renderContext).promise;
+        const renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+        };
 
-  pageNumLabel.textContent = ${currentPage} / ${pdfDoc.numPages};
-}
+        await page.render(renderContext).promise;
 
-document.getElementById("prev-page").addEventListener("click", () => {
-  if (currentPage <= 1) return;
-  currentPage--;
-  renderPage();
-});
+        // バッククォート（Shift+@）を使って正しく表示
+        pageNumLabel.textContent = `${currentPage} / ${pdfDoc.numPages}`;
+    }
 
-document.getElementById("next-page").addEventListener("click", () => {
-  if (currentPage >= pdfDoc.numPages) return;
-  currentPage++;
-  renderPage();
-});
+    document.getElementById("prev-page").addEventListener("click", () => {
+        if (!pdfDoc || currentPage <= 1) return;
+        currentPage--;
+        renderPage();
+    });
 
-zoomSlider.addEventListener("input", () => {
-  scale = zoomSlider.value / 100;
-  zoomLabel.textContent = 拡大率: ${zoomSlider.value}%;
-  if (pdfDoc) renderPage();
+    document.getElementById("next-page").addEventListener("click", () => {
+        if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
+        currentPage++;
+        renderPage();
+    });
+
+    zoomSlider.addEventListener("input", () => {
+        scale = zoomSlider.value / 100;
+        zoomLabel.textContent = `拡大率: ${zoomSlider.value}%`;
+        if (pdfDoc) renderPage();
+    });
+    
+    // 時計機能（おまけ）
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById("clock").textContent = 
+            `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }, 1000);
 });
