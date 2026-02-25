@@ -7,13 +7,28 @@
 <style>
 body{margin:0;background:#000;color:#fff;font-family:-apple-system,sans-serif;overflow:hidden}
 
+/* --- 起動画面（スプラッシュ画面） --- */
+#splash {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #000; z-index: 2000;
+  display: flex; justify-content: center; align-items: center;
+  transition: opacity 1s ease-out; /* ふわっと消える効果 */
+}
+.splash-logo {
+  font-size: 24px; font-weight: 600; color: #fff;
+  letter-spacing: 3px; font-family: 'Verdana', sans-serif;
+  animation: pulse 2s infinite; /* ほんのり鼓動するように光る */
+}
+@keyframes pulse {
+  0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; }
+}
+
 /* --- 上部操作バー --- */
 #zoom-bar{position:fixed;top:0;width:100%;height:70px;background:#333;display:flex;align-items:center;padding:0 15px;gap:10px;z-index:100;box-sizing:border-box}
 .file-select-btn{cursor:pointer;background:#ddd;color:#000;padding:8px 12px;border-radius:6px;font-size:13px;font-weight:bold;border:none}
 .zoom-btn{width:40px;height:40px;border-radius:50%;border:none;background:#ddd;color:#000;font-size:18px;flex-shrink:0}
 #page-num{font-size:12px;min-width:50px;text-align:center}
 
-/* スライダーとファイル名のセット */
 .control-set{display:flex;flex-direction:column;flex-grow:1;max-width:200px;gap:2px}
 .file-label{font-size:10px;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:14px}
 #z-s{width:100%;height:30px}
@@ -29,25 +44,16 @@ body{margin:0;background:#000;color:#fff;font-family:-apple-system,sans-serif;ov
 .round-btn{width:40px;height:40px;border-radius:50%;background:#ddd;border:none;font-size:18px;color:#000;flex-shrink:0}
 #s-b{width:100%;height:30px}
 
-/* --- クレジットエリア --- */
-#credit {
-  margin-left: auto;
-  padding-left: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-}
-.c-text {
-  font-size: 11px;
-  font-weight: 600;
-  color: #555; 
-  letter-spacing: 0.5px;
-  font-family: 'Verdana', sans-serif;
-}
+/* --- クレジット --- */
+#credit { margin-left: auto; padding-left: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;}
+.c-text { font-size: 11px; font-weight: 600; color: #555; letter-spacing: 0.5px; font-family: 'Verdana', sans-serif;}
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <div class="splash-logo">Kei.works</div>
+</div>
 
 <div id="zoom-bar">
   <label for="f-p" class="file-select-btn">PDF選択</label>
@@ -55,7 +61,6 @@ body{margin:0;background:#000;color:#fff;font-family:-apple-system,sans-serif;ov
   <button id="b-p" class="zoom-btn">←</button>
   <button id="n-pg" class="zoom-btn">→</button>
   <span id="page-num">0/0</span>
-  
   <div class="control-set">
     <div id="pdf-name" class="file-label">PDF未選択</div>
     <input type="range" id="z-s" min="50" max="300" value="100">
@@ -70,12 +75,85 @@ body{margin:0;background:#000;color:#fff;font-family:-apple-system,sans-serif;ov
     <label for="f-a" class="file-select-btn">曲選択</label>
     <input type="file" id="f-a" accept="audio/*" style="display:none">
     <button id="p-b" class="round-btn">▶</button>
-    
     <div class="control-set">
       <div id="audio-name" class="file-label">曲未選択</div>
       <input type="range" id="s-b" min="0" max="100" value="0">
     </div>
   </div>
-
   <div id="credit">
     <span class="c-text">©Kei.works</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  // 起動画面を2秒後に消す処理
+  window.onload = () => {
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
+      splash.style.opacity = '0';
+      setTimeout(() => { splash.style.display = 'none'; }, 1000);
+    }, 2000); // 2000ミリ秒（2秒）表示
+  };
+
+  // 時計
+  function updateClock(){
+    const d=new Date(),h=String(d.getHours()).padStart(2,'0'),m=String(d.getMinutes()).padStart(2,'0');
+    const c=document.getElementById('clock');
+    if(c) c.textContent=h+":"+m;
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // PDF設定
+  const pdfjsLib=window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+  
+  let doc=null, pn=1, sc=1.0, rent=false;
+  const cvs=document.getElementById('pdf-canvas'), ctx=cvs.getContext('2d');
+
+  async function render(){
+    if(!doc || rent) return;
+    rent=true;
+    try {
+      const pg=await doc.getPage(pn);
+      const dpr=window.devicePixelRatio||1;
+      const vp=pg.getViewport({scale:sc*dpr});
+      cvs.width=vp.width; cvs.height=vp.height;
+      cvs.style.width=(vp.width/dpr)+'px'; cvs.style.height=(vp.height/dpr)+'px';
+      await pg.render({canvasContext:ctx, viewport:vp}).promise;
+    } catch(e) { console.error(e); }
+    rent=false;
+    document.getElementById('page-num').textContent=pn+"/"+doc.numPages;
+  }
+
+  document.getElementById('f-p').onchange=(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    document.getElementById('pdf-name').textContent = f.name;
+    const r=new FileReader(); r.onload=async function(){
+      const d=new Uint8Array(this.result);
+      doc=await pdfjsLib.getDocument({data:d}).promise; pn=1; render();
+    }; r.readAsArrayBuffer(f);
+  };
+
+  document.getElementById('b-p').onclick=()=>{if(doc&&pn>1){pn--;render()}};
+  document.getElementById('n-pg').onclick=()=>{if(doc&&pn<doc.numPages){pn++;render()}};
+  document.getElementById('z-s').oninput=(e)=>{sc=e.target.value/100;render()};
+
+  // 再生プレイヤー
+  const au=new Audio(), pb=document.getElementById('p-b'), fa=document.getElementById('f-a'), sb=document.getElementById('s-b');
+  fa.onchange=(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    document.getElementById('audio-name').textContent = f.name;
+    au.src=URL.createObjectURL(f); au.load();
+  };
+  pb.onclick=()=>{
+    if(!au.src) return;
+    if(au.paused){ au.play().catch(()=>{}); pb.textContent="||"; }
+    else { au.pause(); pb.textContent="▶"; }
+  };
+  au.ontimeupdate=()=>{ if(au.duration) sb.value=(au.currentTime/au.duration)*100; };
+  sb.oninput=(e)=>{ if(au.duration) au.currentTime=(e.target.value/100)*au.duration; };
+})();
+</script>
+</body>
+</html>
