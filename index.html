@@ -5,24 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ViewTune v2 - Kei.works</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js" defer></script>
 <style>
 body { margin: 0; background: #000; color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; }
+
+/* --- 起動画面（スプラッシュ画面） --- */
 #splash {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: #000; z-index: 2000;
+  background: #000; z-index: 9999; /* 最前面に配置 */
   display: flex; justify-content: center; align-items: center;
-  transition: opacity 1.2s ease-out; pointer-events: none; /* 下のボタンを邪魔しない */
+  transition: opacity 0.8s ease-out, visibility 0.8s;
+  pointer-events: none;
 }
 .splash-logo {
   font-size: 28px; font-weight: 300; color: #fff;
-  letter-spacing: 10px; animation: pulse 2.5s infinite;
+  letter-spacing: 10px; animation: pulse 2s infinite;
 }
 @keyframes pulse {
-  0% { opacity: 0.3; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.3; transform: scale(0.98); }
+  0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; }
 }
+
+/* --- メイン画面の各パーツ --- */
 #zoom-bar {
   position: fixed; top: 0; width: 100%; height: 70px;
   background: #333; display: flex; align-items: center;
@@ -112,46 +115,40 @@ body { margin: 0; background: #000; color: #fff; font-family: 'Montserrat', sans
 </div>
 
 <script>
-(function(){
-  // 起動画面を確実に消すための関数
-  function hideSplash() {
+  // --- 1. 起動画面を消す処理を最優先で実行 ---
+  (function() {
     const splash = document.getElementById('splash');
-    if(splash && splash.style.display !== 'none') {
-      splash.style.opacity = '0';
-      setTimeout(() => { splash.style.display = 'none'; }, 1200);
+    function hide() {
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; }, 1000);
+      }
     }
-  }
+    // どんなに遅くても、実行開始から2.5秒後には消し始める
+    setTimeout(hide, 2500);
+  })();
 
-  // 読み込み完了時、または強制的に2秒後に開始
-  window.addEventListener('load', () => setTimeout(hideSplash, 2000));
-  setTimeout(hideSplash, 4000); // 念のための予備（4秒後には絶対消す）
+  // --- 2. その他の機能 ---
+  (function(){
+    function updateClock(){
+      const d=new Date(), h=String(d.getHours()).padStart(2,'0'), m=String(d.getMinutes()).padStart(2,'0');
+      const c=document.getElementById('clock');
+      if(c) c.textContent=h+":"+m;
+    }
+    setInterval(updateClock, 1000); updateClock();
 
-  function updateClock(){
-    const d=new Date(), h=String(d.getHours()).padStart(2,'0'), m=String(d.getMinutes()).padStart(2,'0');
-    const c=document.getElementById('clock');
-    if(c) c.textContent=h+":"+m;
-  }
-  setInterval(updateClock, 1000); updateClock();
+    window.onload = () => {
+      const pdfjsLib = window['pdfjs-dist/build/pdf'];
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+      
+      let doc=null, pn=1, sc=1.0, rent=false;
+      const cvs=document.getElementById('pdf-canvas'), ctx=cvs.getContext('2d');
 
-  const pdfjsLib=window['pdfjs-dist/build/pdf'];
-  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
-  
-  let doc=null, pn=1, sc=1.0, rent=false;
-  const cvs=document.getElementById('pdf-canvas'), ctx=cvs.getContext('2d');
-
-  async function render(){
-    if(!doc || rent) return;
-    rent=true;
-    try {
-      const pg=await doc.getPage(pn);
-      const dpr=window.devicePixelRatio||1;
-      const vp=pg.getViewport({scale:sc*dpr});
-      cvs.width=vp.width; cvs.height=vp.height;
-      cvs.style.width=(vp.width/dpr)+'px'; cvs.style.height=(vp.height/dpr)+'px';
-      await pg.render({canvasContext:ctx, viewport:vp}).promise;
-    } catch(e) { console.error(e); }
-    rent=false;
-    document.getElementById('page-num').textContent=pn+"/"+doc.numPages;
-  }
-
-  document.getElementById('f-p').
+      async function render(){
+        if(!doc || rent) return;
+        rent=true;
+        try {
+          const pg=await doc.getPage(pn);
+          const dpr=window.devicePixelRatio||1;
+          const vp=pg.getViewport({scale:sc*dpr});
+          cvs.width=vp.width; cvs.
