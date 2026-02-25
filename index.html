@@ -3,25 +3,21 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ViewTune v2</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 <style>
-/* 全体のフォントを Montserrat に変更 */
-body{margin:0;background:#000;color:#fff;font-family:'Montserrat', sans-serif;overflow:hidden}
+body{margin:0;background:#000;color:#fff;font-family:-apple-system,sans-serif;overflow:hidden}
 
 /* --- 起動画面（スプラッシュ画面） --- */
 #splash {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: #000; z-index: 2000;
   display: flex; justify-content: center; align-items: center;
-  transition: opacity 1s ease-out;
-  pointer-events: none; /* 念のため下の操作を邪魔しないように */
+  transition: opacity 1s ease-out; /* ふわっと消える効果 */
 }
 .splash-logo {
   font-size: 24px; font-weight: 600; color: #fff;
-  letter-spacing: 5px; /* 少し広げて高級感を出し */
-  font-family: 'Montserrat', sans-serif;
-  animation: pulse 2s infinite;
+  letter-spacing: 3px; font-family: 'Verdana', sans-serif;
+  animation: pulse 2s infinite; /* ほんのり鼓動するように光る */
 }
 @keyframes pulse {
   0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; }
@@ -29,9 +25,9 @@ body{margin:0;background:#000;color:#fff;font-family:'Montserrat', sans-serif;ov
 
 /* --- 上部操作バー --- */
 #zoom-bar{position:fixed;top:0;width:100%;height:70px;background:#333;display:flex;align-items:center;padding:0 15px;gap:10px;z-index:100;box-sizing:border-box}
-.file-select-btn{cursor:pointer;background:#ddd;color:#000;padding:8px 12px;border-radius:6px;font-size:13px;font-weight:bold;border:none;font-family:'Montserrat', sans-serif;}
+.file-select-btn{cursor:pointer;background:#ddd;color:#000;padding:8px 12px;border-radius:6px;font-size:13px;font-weight:bold;border:none}
 .zoom-btn{width:40px;height:40px;border-radius:50%;border:none;background:#ddd;color:#000;font-size:18px;flex-shrink:0}
-#page-num{font-size:12px;min-width:50px;text-align:center;font-weight:600;}
+#page-num{font-size:12px;min-width:50px;text-align:center}
 
 .control-set{display:flex;flex-direction:column;flex-grow:1;max-width:200px;gap:2px}
 .file-label{font-size:10px;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:14px}
@@ -50,7 +46,7 @@ body{margin:0;background:#000;color:#fff;font-family:'Montserrat', sans-serif;ov
 
 /* --- クレジット --- */
 #credit { margin-left: auto; padding-left: 15px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center;}
-.c-text { font-size: 11px; font-weight: 600; color: #555; letter-spacing: 0.5px; font-family: 'Montserrat', sans-serif;}
+.c-text { font-size: 11px; font-weight: 600; color: #555; letter-spacing: 0.5px; font-family: 'Verdana', sans-serif;}
 </style>
 </head>
 <body>
@@ -91,15 +87,73 @@ body{margin:0;background:#000;color:#fff;font-family:'Montserrat', sans-serif;ov
 
 <script>
 (function(){
-  // 起動画面を消す処理（安全策：ライブラリ読み込みを待たずに一定時間で必ず消す）
-  function hideSplash() {
-    const splash = document.getElementById('splash');
-    if (splash && splash.style.display !== 'none') {
+  // 起動画面を2秒後に消す処理
+  window.onload = () => {
+    setTimeout(() => {
+      const splash = document.getElementById('splash');
       splash.style.opacity = '0';
       setTimeout(() => { splash.style.display = 'none'; }, 1000);
-    }
+    }, 2000); // 2000ミリ秒（2秒）表示
+  };
+
+  // 時計
+  function updateClock(){
+    const d=new Date(),h=String(d.getHours()).padStart(2,'0'),m=String(d.getMinutes()).padStart(2,'0');
+    const c=document.getElementById('clock');
+    if(c) c.textContent=h+":"+m;
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // PDF設定
+  const pdfjsLib=window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+  
+  let doc=null, pn=1, sc=1.0, rent=false;
+  const cvs=document.getElementById('pdf-canvas'), ctx=cvs.getContext('2d');
+
+  async function render(){
+    if(!doc || rent) return;
+    rent=true;
+    try {
+      const pg=await doc.getPage(pn);
+      const dpr=window.devicePixelRatio||1;
+      const vp=pg.getViewport({scale:sc*dpr});
+      cvs.width=vp.width; cvs.height=vp.height;
+      cvs.style.width=(vp.width/dpr)+'px'; cvs.style.height=(vp.height/dpr)+'px';
+      await pg.render({canvasContext:ctx, viewport:vp}).promise;
+    } catch(e) { console.error(e); }
+    rent=false;
+    document.getElementById('page-num').textContent=pn+"/"+doc.numPages;
   }
 
-  // ページ読み込み完了時、または強制的に2.5秒後に実行
-  window.addEventListener('load', () => setTimeout(hideSplash, 2000));
-  setTimeout(hideSplash, 250
+  document.getElementById('f-p').onchange=(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    document.getElementById('pdf-name').textContent = f.name;
+    const r=new FileReader(); r.onload=async function(){
+      const d=new Uint8Array(this.result);
+      doc=await pdfjsLib.getDocument({data:d}).promise; pn=1; render();
+    }; r.readAsArrayBuffer(f);
+  };
+
+  document.getElementById('b-p').onclick=()=>{if(doc&&pn>1){pn--;render()}};
+  document.getElementById('n-pg').onclick=()=>{if(doc&&pn<doc.numPages){pn++;render()}};
+  document.getElementById('z-s').oninput=(e)=>{sc=e.target.value/100;render()};
+
+  // 再生プレイヤー
+  const au=new Audio(), pb=document.getElementById('p-b'), fa=document.getElementById('f-a'), sb=document.getElementById('s-b');
+  fa.onchange=(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    document.getElementById('audio-name').textContent = f.name;
+    au.src=URL.createObjectURL(f); au.load();
+  };
+  pb.onclick=()=>{
+    if(!au.src) return;
+    if(au.paused){ au.play().catch(()=>{}); pb.textContent="||"; }
+    else { au.pause(); pb.textContent="▶"; }
+  };
+  au.ontimeupdate=()=>{ if(au.duration) sb.value=(au.currentTime/au.duration)*100; };
+  sb.oninput=(e)=>{ if(au.duration) au.currentTime=(e.target.value/100)*au.duration; };
+})();
+</script>
+</body>
+</html>
