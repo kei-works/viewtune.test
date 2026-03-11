@@ -26,14 +26,15 @@ aside {
   background: #111; border-right: 1px solid #333; 
   display: flex; flex-direction: column; align-items: center; 
   padding: 15px 10px; box-sizing: border-box; 
-  overflow-y: auto; z-index: 100; -webkit-overflow-scrolling: touch;
+  overflow-y: auto; z-index: 1000; -webkit-overflow-scrolling: touch;
   transition: transform 0.3s ease, margin-left 0.3s ease;
 }
 aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 
+/* ★サイドバー開閉ボタンのz-indexを最前面(2000)に修正 */
 #toggle-btn {
   position: fixed; top: 50%; left: 300px;
-  transform: translateY(-50%); z-index: 200;
+  transform: translateY(-50%); z-index: 2000;
   width: 16px; height: 80px; 
   background: #222; border: 1px solid #444; border-left: none;
   border-radius: 0 8px 8px 0; cursor: pointer;
@@ -159,7 +160,9 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   document.addEventListener('webkitfullscreenchange', updateFsBtn);
 
   toggleBtn.onclick = () => {
-    sidebar.classList.toggle('hidden'); resizer.classList.toggle('hidden'); toggleBtn.classList.toggle('is-hidden');
+    sidebar.classList.toggle('hidden'); 
+    resizer.classList.toggle('hidden'); 
+    toggleBtn.classList.toggle('is-hidden');
     sidebar.style.transition = 'transform 0.3s ease, margin-left 0.3s ease';
     toggleBtn.style.transition = 'left 0.3s ease, background 0.2s';
     if(sidebar.classList.contains('hidden')) { sidebar.style.marginLeft = `-${currentWidth}px`; } 
@@ -240,9 +243,8 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
     };
   } catch(e) {}
 
-  // ピンチズーム（指の間を拡大する）修正版
   let initialDist = null, initialScale = 1, isMoving = false;
-  let lastX, lastY, tempNewScale = 1.0;
+  let lastX, lastY;
   let centerX, centerY;
 
   container.addEventListener('touchstart', (e) => {
@@ -264,7 +266,6 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
       const newScale = Math.min(Math.max(initialScale * (dist / initialDist), 0.5), 4.0);
       
       const ratio = newScale / sc;
-      // 指の中心を基準にスクロール位置を調整
       const rect = container.getBoundingClientRect();
       const relX = centerX - rect.left;
       const relY = centerY - rect.top;
