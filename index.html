@@ -59,21 +59,28 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 }
 #fs-btn:hover, #fs-btn:active { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.3); }
 
-/* --- 修正：ページ送りボタンを画面上部に配置 --- */
-.floating-pg-btn {
-  position: absolute; 
-  top: 60px; /* 全画面ボタンの下あたりに配置 */
-  width: 50px; height: 50px;
-  border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3); font-size: 20px; font-weight: bold;
-  cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
-  z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+/* --- 修正：中央上部の浮遊コントローラー --- */
+.floating-ctrl-group {
+  position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
-.floating-pg-btn:active { background: rgba(255, 255, 255, 0.4); }
-#float-prev { left: 30px; } 
-#float-next { right: 30px; } 
-.visible-btn { opacity: 1; pointer-events: auto; }
+.floating-ctrl-group.visible-btn { opacity: 1; pointer-events: auto; }
+
+.floating-pg-btn {
+  width: 35px; height: 35px; border-radius: 50%; 
+  background: rgba(255, 255, 255, 0.15); color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2); font-size: 16px; font-weight: bold;
+  cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.floating-pg-btn:active { background: rgba(255, 255, 255, 0.3); }
+
+#float-page-num {
+  background: rgba(0, 0, 0, 0.5); padding: 4px 12px; border-radius: 12px;
+  font-size: 11px; font-weight: 700; color: #fff; backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1); white-space: nowrap;
+}
 
 .sep { width: 100%; border-bottom: 1px solid #444; margin: 15px 0; flex-shrink: 0; }
 #clock-cvs { width: 90%; height: auto; aspect-ratio: 1/1; max-width: 600px; flex-shrink: 0; }
@@ -131,8 +138,11 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 
   <main id="pdf-container">
     <button id="fs-btn" title="全画面モード">⛶</button>
-    <button id="float-prev" class="floating-pg-btn">←</button>
-    <button id="float-next" class="floating-pg-btn">→</button>
+    <div id="float-ctrl" class="floating-ctrl-group">
+      <button id="float-prev" class="floating-pg-btn">←</button>
+      <div id="float-page-num">0 / 0</div>
+      <button id="float-next" class="floating-pg-btn">→</button>
+    </div>
     <canvas id="pdf-canvas"></canvas>
   </main>
 </div>
@@ -147,7 +157,7 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 
   const sidebar = document.getElementById('sidebar'), toggleBtn = document.getElementById('toggle-btn');
   const digitalClock = document.getElementById('digital-clock');
-  const floatPrev = document.getElementById('float-prev'), floatNext = document.getElementById('float-next');
+  const floatCtrl = document.getElementById('float-ctrl'), floatPrev = document.getElementById('float-prev'), floatNext = document.getElementById('float-next'), floatPN = document.getElementById('float-page-num');
   
   let isResizing = false, currentWidth = 300, startX = 0, initialW = 0, moved = false;
 
@@ -211,11 +221,9 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
     sidebar.style.marginLeft = sidebar.classList.contains('hidden') ? `-${currentWidth}px` : "0";
     
     if (sidebar.classList.contains('hidden')) {
-      floatPrev.classList.add('visible-btn');
-      floatNext.classList.add('visible-btn');
+      floatCtrl.classList.add('visible-btn');
     } else {
-      floatPrev.classList.remove('visible-btn');
-      floatNext.classList.remove('visible-btn');
+      floatCtrl.classList.remove('visible-btn');
     }
     
     moved = false;
@@ -270,7 +278,9 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
     const pg=await doc.getPage(pn); const dpr=window.devicePixelRatio||1, vp=pg.getViewport({scale:dpr*1.5});
     cvs.width=vp.width; cvs.height=vp.height; cvs.style.width=(vp.width/dpr)+'px'; cvs.style.height=(vp.height/dpr)+'px';
     await pg.render({canvasContext:ctx, viewport:vp}).promise;
-    document.getElementById('page-num').textContent=pn+" / "+doc.numPages;
+    const pStr = pn + " / " + doc.numPages;
+    document.getElementById('page-num').textContent = pStr;
+    floatPN.textContent = pStr; // 浮遊表示も更新
     updateTransform();
   }
 
