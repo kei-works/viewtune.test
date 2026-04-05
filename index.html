@@ -59,10 +59,10 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 }
 #fs-btn:hover, #fs-btn:active { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.3); }
 
-/* --- 修正：全画面時でも隠れないよう位置を内側に寄せる --- */
+/* --- 修正：ページ送りボタンを画面上部に配置 --- */
 .floating-pg-btn {
   position: absolute; 
-  bottom: 40px; /* 少し上に上げる */
+  top: 60px; /* 全画面ボタンの下あたりに配置 */
   width: 50px; height: 50px;
   border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.3); font-size: 20px; font-weight: bold;
@@ -71,8 +71,8 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   box-shadow: 0 4px 15px rgba(0,0,0,0.6);
 }
 .floating-pg-btn:active { background: rgba(255, 255, 255, 0.4); }
-#float-prev { left: 30px; } /* 30px内側へ */
-#float-next { right: 30px; } /* 30px内側へ */
+#float-prev { left: 30px; } 
+#float-next { right: 30px; } 
 .visible-btn { opacity: 1; pointer-events: auto; }
 
 .sep { width: 100%; border-bottom: 1px solid #444; margin: 15px 0; flex-shrink: 0; }
