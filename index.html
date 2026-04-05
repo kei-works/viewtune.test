@@ -60,6 +60,8 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); 
   outline: none;
+  color: #ffffff !important; /* ← これを確実に追加 */
+  -webkit-text-fill-color: #ffffff !important; /* ← iOS向けにこれを追加 */
 }
 /* ホバーやアクティブ時も背景色を絶対に変えない */
 #fs-btn:hover, #fs-btn:active { background: rgba(0, 0, 0, 0.5) !important; opacity: 0.8; }#fs-btn {
