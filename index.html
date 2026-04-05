@@ -48,11 +48,11 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 }
 #toggle-btn.is-hidden { left: 0 !important; border-left: 1px solid #444; border-radius: 0 8px 8px 0; }
 
-/* --- 修正：全画面ボタンの色をページ数表示に合わせる --- */
+/* --- 修正：常に同じ背景（半透明黒＋ぼかし）に固定 --- */
 #fs-btn {
   position: absolute; top: 10px; right: 10px; z-index: 150;
   width: 32px; height: 32px; 
-  background: rgba(0, 0, 0, 0.5); /* ページ数背景と同じ */
+  background: rgba(0, 0, 0, 0.5); /* 常にこの色 */
   border: 1px solid rgba(255, 255, 255, 0.1); 
   color: #fff; border-radius: 6px; cursor: pointer; 
   backdrop-filter: blur(5px);
@@ -69,10 +69,9 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 }
 .floating-ctrl-group.visible-btn { opacity: 1; pointer-events: auto; }
 
-/* --- 修正：ページ送りボタンの色をページ数表示に合わせる --- */
 .floating-pg-btn {
   width: 35px; height: 35px; border-radius: 50%; 
-  background: rgba(0, 0, 0, 0.5); /* ページ数背景と同じ */
+  background: rgba(0, 0, 0, 0.5); 
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.1); 
   font-size: 16px; font-weight: bold;
