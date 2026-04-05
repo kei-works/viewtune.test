@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Kei.works ViewTune.test</title>
+<title>Kei.works ViewTune.test2</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <style>
@@ -49,7 +49,7 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 #toggle-btn.is-hidden { left: 0 !important; border-left: 1px solid #444; border-radius: 0 8px 8px 0; }
 
 #fs-btn {
-  position: absolute; top: 10px; right: 5px; z-index: 150;
+  position: absolute; top: 10px; right: 10px; z-index: 150;
   width: 32px; height: 32px; background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.2); color: #fff;
   border-radius: 6px; cursor: pointer; backdrop-filter: blur(5px);
@@ -57,23 +57,22 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); 
   transition: background 0.2s;
 }
-#fs-btn:hover, #fs-btn:active {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.3);
-}
+#fs-btn:hover, #fs-btn:active { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.3); }
 
-/* --- 追加：浮遊ページ送りボタン --- */
+/* --- 修正：全画面時でも隠れないよう位置を内側に寄せる --- */
 .floating-pg-btn {
-  position: absolute; bottom: 20px; width: 50px; height: 50px;
-  border-radius: 50%; background: rgba(255, 255, 255, 0.15); color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2); font-size: 20px; font-weight: bold;
+  position: absolute; 
+  bottom: 40px; /* 少し上に上げる */
+  width: 50px; height: 50px;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3); font-size: 20px; font-weight: bold;
   cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
-  z-index: 150; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
   box-shadow: 0 4px 15px rgba(0,0,0,0.6);
 }
-.floating-pg-btn:active { background: rgba(255, 255, 255, 0.3); }
-#float-prev { left: 20px; }
-#float-next { right: 20px; }
+.floating-pg-btn:active { background: rgba(255, 255, 255, 0.4); }
+#float-prev { left: 30px; } /* 30px内側へ */
+#float-next { right: 30px; } /* 30px内側へ */
 .visible-btn { opacity: 1; pointer-events: auto; }
 
 .sep { width: 100%; border-bottom: 1px solid #444; margin: 15px 0; flex-shrink: 0; }
@@ -194,7 +193,7 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   toggleBtn.onclick = () => {
     const isHidden = sidebar.classList.contains('hidden');
     if (moved && !isHidden) { moved = false; return; }
-    if (!isHidden && currentWidth <= 155) {
+    if (!isHidden && currentWidth <= 185) {
       sidebar.classList.add('hidden');
       toggleBtn.classList.add('is-hidden');
     } else {
@@ -211,7 +210,6 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
     toggleBtn.style.left = sidebar.classList.contains('hidden') ? "0px" : currentWidth + 'px';
     sidebar.style.marginLeft = sidebar.classList.contains('hidden') ? `-${currentWidth}px` : "0";
     
-    // --- 修正：サイドバーが隠れているときだけボタンを表示 ---
     if (sidebar.classList.contains('hidden')) {
       floatPrev.classList.add('visible-btn');
       floatNext.classList.add('visible-btn');
@@ -231,7 +229,6 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   window.addEventListener('mouseup', finishDrag);
   window.addEventListener('touchend', finishDrag);
 
-  // --- Clock ---
   function updateClock(){
     const d=new Date(); digitalClock.textContent=d.toTimeString().split(' ')[0];
     const canvas=document.getElementById('clock-cvs'), ctx=canvas.getContext('2d');
@@ -251,7 +248,6 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   function drawHand(ctx,deg,len,w,col){ ctx.save(); ctx.rotate(deg*Math.PI/180); ctx.beginPath(); ctx.moveTo(0,30); ctx.lineTo(0,-len); ctx.strokeStyle=col; ctx.lineWidth=w; ctx.lineCap='round'; ctx.stroke(); ctx.restore(); }
   setInterval(updateClock, 1000); updateClock();
 
-  // --- PDF ---
   let doc=null, pn=1, sc=1.0, posX=0, posY=0, isFreeMode=true;
   const cvs=document.getElementById('pdf-canvas'), ctx=cvs.getContext('2d'), container=document.getElementById('pdf-container');
   const pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -317,7 +313,6 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   }, { passive: false });
   container.addEventListener('touchend', () => { if(isFreeMode) keepInBounds(); });
 
-  // --- Audio ---
   const au=new Audio(), pb=document.getElementById('p-b'), fa=document.getElementById('f-a'), tt=document.getElementById('time-text');
   function fmtTime(s) { if (isNaN(s) || s === Infinity) return "0:00"; const m = Math.floor(s / 60); const rs = Math.floor(s % 60); return `${m}:${rs < 10 ? '0' : ''}${rs}`; }
   function updateAudioTime() { tt.textContent = `${fmtTime(au.currentTime)} / ${fmtTime(au.duration)}`; }
@@ -327,7 +322,6 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   au.addEventListener('timeupdate', updateAudioTime);
   au.addEventListener('ended', () => { pb.textContent="▶"; au.currentTime=0; });
 
-  // Fullscreen
   const fsBtn = document.getElementById('fs-btn');
   fsBtn.onclick = () => {
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
