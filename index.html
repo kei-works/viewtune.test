@@ -193,6 +193,7 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   const floatCtrl = document.getElementById('float-ctrl'), floatPrev = document.getElementById('float-prev'), floatNext = document.getElementById('float-next'), floatPN = document.getElementById('float-page-num');
   
   let isResizing = false, currentWidth = 300, startX = 0, initialW = 0, moved = false;
+  let lastSidebarWidth = 300; // サイドバーの幅を記憶する変数
 
   function updateBtnIcon() {
     if (sidebar.classList.contains('hidden')) { toggleBtn.textContent = "»"; } 
@@ -227,6 +228,7 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   const finishDrag = () => {
     if (!isResizing) return;
     isResizing = false;
+    lastSidebarWidth = currentWidth; // ドラッグ終了時の幅を記憶
     toggleBtn.classList.remove('is-active');
     toggleBtn.style.transition = 'left 0.3s ease, background 0.2s, border-color 0.2s, box-shadow 0.2s';
     sidebar.style.transition = 'transform 0.3s ease, margin-left 0.3s ease, width 0.3s ease, min-width 0.3s ease';
@@ -236,23 +238,26 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
   toggleBtn.onclick = () => {
     const isHidden = sidebar.classList.contains('hidden');
     if (moved && !isHidden) { moved = false; return; }
-    if (!isHidden && currentWidth <= 185) {
+    
+    if (!isHidden) {
+      // 閉じる時
+      lastSidebarWidth = currentWidth; // 閉じる直前の幅を記憶
       sidebar.classList.add('hidden');
       toggleBtn.classList.add('is-hidden');
+      toggleBtn.style.left = "0px";
+      sidebar.style.marginLeft = `-${currentWidth}px`;
     } else {
-      const willOpen = sidebar.classList.contains('hidden');
-      sidebar.classList.toggle('hidden');
-      toggleBtn.classList.toggle('is-hidden');
-      if (willOpen) {
-        currentWidth = 180;
-        sidebar.style.width = currentWidth + 'px';
-        sidebar.style.minWidth = currentWidth + 'px';
-        digitalClock.style.fontSize = Math.min(3.5, currentWidth / 85) + 'rem';
-      }
+      // 開く時
+      sidebar.classList.remove('hidden');
+      toggleBtn.classList.remove('is-hidden');
+      currentWidth = lastSidebarWidth; // 記憶していた幅を戻す
+      sidebar.style.width = currentWidth + 'px';
+      sidebar.style.minWidth = currentWidth + 'px';
+      sidebar.style.marginLeft = "0";
+      toggleBtn.style.left = currentWidth + 'px';
+      digitalClock.style.fontSize = Math.min(3.5, currentWidth / 85) + 'rem';
     }
-    toggleBtn.style.left = sidebar.classList.contains('hidden') ? "0px" : currentWidth + 'px';
-    sidebar.style.marginLeft = sidebar.classList.contains('hidden') ? `-${currentWidth}px` : "0";
-    
+
     if (sidebar.classList.contains('hidden')) {
       floatCtrl.classList.add('visible-btn');
     } else {
