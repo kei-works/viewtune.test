@@ -48,30 +48,26 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 }
 #toggle-btn.is-hidden { left: 0 !important; border-left: 1px solid #444; border-radius: 0 8px 8px 0; }
 
-/* --- 全画面ボタン：常に同じ背景・ぼかしを維持 --- */
+/* --- 修正：全画面ボタンの背景・ぼかしを完全に固定 --- */
 #fs-btn {
-  position: absolute; top: 10px; right: 10px; z-index: 150;
+  position: absolute; top: 10px; right: 10px; z-index: 210; /* z-indexを確保 */
   width: 32px; height: 32px; 
   background: rgba(0, 0, 0, 0.5) !important; 
   border: 1px solid rgba(255, 255, 255, 0.1) !important; 
   color: #fff; border-radius: 6px; cursor: pointer; 
-  backdrop-filter: blur(5px) !important;
+  backdrop-filter: blur(5px) !important; 
   -webkit-backdrop-filter: blur(5px) !important;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); 
-  transition: opacity 0.2s;
   outline: none;
-  -webkit-appearance: none;
 }
-/* ホバーやアクティブ時も背景は変えず、透明度で反応させる */
-#fs-btn:hover, #fs-btn:active { 
-  background: rgba(0, 0, 0, 0.5) !important; 
-  opacity: 0.7;
-}
+/* ホバーやアクティブ時も背景色を絶対に変えない */
+#fs-btn:hover, #fs-btn:active { background: rgba(0, 0, 0, 0.5) !important; opacity: 0.8; }
 
+/* --- 修正：全画面になっても浮動コントロールを最前面に出す --- */
 .floating-ctrl-group {
   position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 8px; z-index: 200;
+  display: flex; align-items: center; gap: 8px; z-index: 220; /* fs-btnより上に設定 */
   opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
 .floating-ctrl-group.visible-btn { opacity: 1; pointer-events: auto; }
