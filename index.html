@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Kei.works ViewTune.test2</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght=100&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <style>
 body { margin: 0; background: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; touch-action: none; position: fixed; width: 100%; height: 100%; }
@@ -48,19 +48,20 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
 }
 #toggle-btn.is-hidden { left: 0 !important; border-left: 1px solid #444; border-radius: 0 8px 8px 0; }
 
-/* --- 修正：常に同じ背景（半透明黒＋ぼかし）に固定 --- */
+/* --- 修正：✖アイコン時も含め、常に同じ背景（半透明黒＋ぼかし）に固定 --- */
 #fs-btn {
   position: absolute; top: 10px; right: 10px; z-index: 150;
   width: 32px; height: 32px; 
-  background: rgba(0, 0, 0, 0.5); /* 常にこの色 */
-  border: 1px solid rgba(255, 255, 255, 0.1); 
+  background: rgba(0, 0, 0, 0.5) !important; /* 常にこの色 */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; 
   color: #fff; border-radius: 6px; cursor: pointer; 
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px) !important; /* 常にぼかす */
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); 
   transition: background 0.2s;
 }
-#fs-btn:hover, #fs-btn:active { background: rgba(255, 255, 255, 0.2); }
+/* ホバー時も背景色は変えず、少し明るくする程度に留める */
+#fs-btn:hover, #fs-btn:active { background: rgba(255, 255, 255, 0.1) !important; }
 
 .floating-ctrl-group {
   position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
@@ -216,7 +217,7 @@ aside.hidden { transform: translateX(-100%); margin-left: -300px; }
       sidebar.classList.toggle('hidden');
       toggleBtn.classList.toggle('is-hidden');
       if (willOpen) {
-        currentWidth = 180;
+        currentWidth = 200;
         sidebar.style.width = currentWidth + 'px';
         sidebar.style.minWidth = currentWidth + 'px';
         digitalClock.style.fontSize = Math.min(3.5, currentWidth / 85) + 'rem';
